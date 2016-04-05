@@ -15,11 +15,31 @@ class DrawView: UIView {
     var currentLines = [NSValue: Line]()
     var finishedLines = Array<Line>()
     
+    // MARK: - IBInspectable properties
+    
+    @IBInspectable var finishedLineColor: UIColor = UIColor.blackColor() {
+        didSet {
+            self.setNeedsDisplay()
+        }
+    }
+    
+    @IBInspectable var currentLineColor: UIColor = UIColor.redColor() {
+        didSet {
+            self.setNeedsDisplay()
+        }
+    }
+    
+    @IBInspectable var lineThickness: CGFloat = 10 {
+        didSet {
+            self.setNeedsDisplay()
+        }
+    }
+    
     // MARK: - Local Methods
     
     func strokeLine(line: Line) {
         let bezierPath = UIBezierPath()
-        bezierPath.lineWidth = 10
+        bezierPath.lineWidth = self.lineThickness
         bezierPath.lineCapStyle = CGLineCap.Round
         
         bezierPath.moveToPoint(line.begin)
@@ -30,12 +50,11 @@ class DrawView: UIView {
     // MARK: - UIView Methods
     
     override func drawRect(rect: CGRect) {
-        // Draw finished lines in black
-        UIColor.blackColor().setStroke()
+        self.finishedLineColor.setStroke()
         for line in self.finishedLines {
             self.strokeLine(line)
         }
-        UIColor.redColor().setStroke()
+        self.currentLineColor.setStroke()
         for (_, line) in self.currentLines {
             self.strokeLine(line)
         }
