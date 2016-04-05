@@ -41,4 +41,30 @@ class DrawView: UIView {
             self.strokeLine(line)
         }
     }
+    
+    // MARK: - UIResponder Methods
+    
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        guard let validTouch = touches.first else { return }
+        let validTouchLocation = validTouch.locationInView(self)
+        self.currentLine = Line(begin: validTouchLocation, end: validTouchLocation)
+        self.setNeedsDisplay()
+    }
+    
+    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        guard let validTouch = touches.first else { return }
+        let validTouchLocation = validTouch.locationInView(self)
+        self.currentLine?.end = validTouchLocation
+        self.setNeedsDisplay()
+    }
+    
+    override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        if var validLine = self.currentLine, let validTouch = touches.first {
+            let validTouchLocation = validTouch.locationInView(self)
+            validLine.end = validTouchLocation
+            self.finishedLines.append(validLine)
+        }
+        self.currentLine = nil
+        self.setNeedsDisplay()
+    }
 }
