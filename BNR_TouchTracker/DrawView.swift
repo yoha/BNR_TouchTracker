@@ -14,7 +14,14 @@ class DrawView: UIView {
     
     var currentLines = [NSValue: Line]()
     var finishedLines = Array<Line>()
-    var selectedLineIndex: Int?
+    var selectedLineIndex: Int? {
+        didSet {
+            if selectedLineIndex == nil {
+                let menuItemController = UIMenuController.sharedMenuController()
+                menuItemController.setMenuVisible(false, animated: true)
+            }
+        }
+    }
     
     // MARK: - IBInspectable properties
     
@@ -64,10 +71,27 @@ class DrawView: UIView {
     }
     
     func singleTap(gestureRecognizer: UIGestureRecognizer) {
-        print("Gesure recognized as a single tap")
+        print("Gesture recognized as a single tap")
         
         let tapLocationPoint = gestureRecognizer.locationInView(self)
         self.selectedLineIndex = self.indexOfLineAtPoint(tapLocationPoint)
+        
+        let menuController = UIMenuController.sharedMenuController()
+        if self.selectedLineIndex != nil {
+            // Make DrawView the target menu item action messages
+            self.becomeFirstResponder()
+            
+            let deleteMenuItem = UIMenuItem(title: "Delete", action: "deleteLine:")
+            menuController.menuItems = [deleteMenuItem]
+            
+            // Tell the menu where it should come from and appear
+            menuController.setTargetRect(CGRect(x: tapLocationPoint.x, y: tapLocationPoint.y, width: 2, height: 2), inView: self)
+            menuController.setMenuVisible(true, animated: true)
+        }
+        else {
+            menuController.setMenuVisible(false, animated: true)
+        }
+        
         self.setNeedsDisplay()
     }
     
@@ -90,6 +114,14 @@ class DrawView: UIView {
         
         // If nothing is close enough to the tapped point, then we did not select a line
         return nil
+    }
+    
+    func deleteLine(sender: AnyObject) {
+        if let validIndex = self.selectedLineIndex {
+            self.finishedLines.removeAtIndex(validIndex)
+            self.selectedLineIndex = nil
+            self.setNeedsDisplay()
+        }
     }
     
     // MARK: NSCoder Methods
@@ -127,6 +159,10 @@ class DrawView: UIView {
     }
     
     // MARK: - UIResponder Methods
+    
+    override func canBecomeFirstResponder() -> Bool {
+        return true
+    }
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
         // Let's put in a log statement to see the order of events
