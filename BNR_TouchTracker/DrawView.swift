@@ -47,6 +47,25 @@ class DrawView: UIView {
         bezierPath.stroke()
     }
     
+    func doubleTap(gestureRecognizer: UIGestureRecognizer) {
+        print("Gesture recognized as a double tap")
+        
+        self.currentLines.removeAll(keepCapacity: false)
+        self.finishedLines.removeAll(keepCapacity: false)
+        self.setNeedsDisplay()
+    }
+    
+    // MARK: NSCoder Methods
+    
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        
+        let doubleTapGestureRecognizer = UITapGestureRecognizer(target: self, action: "doubleTap:")
+        doubleTapGestureRecognizer.numberOfTapsRequired = 2
+        doubleTapGestureRecognizer.delaysTouchesBegan = true
+        self.addGestureRecognizer(doubleTapGestureRecognizer)
+    }
+    
     // MARK: - UIView Methods
     
     override func drawRect(rect: CGRect) {
