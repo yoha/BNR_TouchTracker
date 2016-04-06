@@ -95,6 +95,24 @@ class DrawView: UIView {
         self.setNeedsDisplay()
     }
     
+    func longPress(gestureRecognizer: UIGestureRecognizer) {
+        print("Gesture recognized as a long press")
+        
+        if gestureRecognizer.state == UIGestureRecognizerState.Began {
+            let longPressLocationPoint = gestureRecognizer.locationInView(self)
+            self.selectedLineIndex = self.indexOfLineAtPoint(longPressLocationPoint)
+            if self.selectedLineIndex != nil {
+                self.currentLines.removeAll(keepCapacity: false)
+            }
+        }
+        else if gestureRecognizer.state == .Ended {
+            self.selectedLineIndex = nil
+        }
+        
+        self.setNeedsDisplay()
+    }
+    
+    // Return the index of the line closest to a given point
     func indexOfLineAtPoint(point: CGPoint) -> Int? {
         // Find a line close to point
         for (index, line) in self.finishedLines.enumerate() {
@@ -124,7 +142,7 @@ class DrawView: UIView {
         }
     }
     
-    // MARK: NSCoder Methods
+    // MARK: - NSCoder Methods
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
@@ -138,6 +156,9 @@ class DrawView: UIView {
         singleTapGestureRecognizer.delaysTouchesBegan = true
         singleTapGestureRecognizer.requireGestureRecognizerToFail(doubleTapGestureRecognizer)
         self.addGestureRecognizer(singleTapGestureRecognizer)
+        
+        let longPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: "longPress:")
+        self.addGestureRecognizer(longPressGestureRecognizer)
     }
     
     // MARK: - UIView Methods
