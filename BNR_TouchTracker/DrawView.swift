@@ -63,18 +63,6 @@ class DrawView: UIView, UIGestureRecognizerDelegate {
         bezierPath.stroke()
     }
     
-    func strokeVariableLine(line: Line) {
-        let bezierPath = UIBezierPath()
-        
-        let velocity = self.panGestureRecognizer.velocityInView(self)
-        
-        bezierPath.lineWidth = self.lineThickness + hypot(velocity.x, velocity.y) / 100
-        bezierPath.lineCapStyle = CGLineCap.Round
-        bezierPath.moveToPoint(line.begin)
-        bezierPath.addLineToPoint(line.end)
-        bezierPath.stroke()
-    }
-    
     func doubleTap(gestureRecognizer: UIGestureRecognizer) {
         print("Gesture recognized as a double tap")
         
@@ -208,19 +196,16 @@ class DrawView: UIView, UIGestureRecognizerDelegate {
     override func drawRect(rect: CGRect) {
         self.finishedLineColor.setStroke()
         for line in self.finishedLines {
-//            self.strokeLine(line)
-            self.strokeVariableLine(line)
+            self.strokeLine(line)
         }
         self.currentLineColor.setStroke()
         for (_, line) in self.currentLines {
-//            self.strokeLine(line)
-            self.strokeVariableLine(line)
+            self.strokeLine(line)
         }
         if let validIndex = self.selectedLineIndex {
             self.selectedLineColor.setStroke()
             let selectedLine = self.finishedLines[validIndex]
-//            self.strokeLine(selectedLine)
-            self.strokeVariableLine(selectedLine)
+            self.strokeLine(selectedLine)
         }
     }
     
