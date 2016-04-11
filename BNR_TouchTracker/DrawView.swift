@@ -23,6 +23,7 @@ class DrawView: UIView, UIGestureRecognizerDelegate {
         }
     }
     var panGestureRecognizer: UIPanGestureRecognizer!
+    var menuController: UIMenuController!
     
     // MARK: - IBInspectable properties
     
@@ -77,7 +78,6 @@ class DrawView: UIView, UIGestureRecognizerDelegate {
         let tapLocationPoint = gestureRecognizer.locationInView(self)
         self.selectedLineIndex = self.indexOfLineAtPoint(tapLocationPoint)
         
-        let menuController = UIMenuController.sharedMenuController()
         if self.selectedLineIndex != nil {
             // Make DrawView the target menu item action messages sent by menuController
             self.becomeFirstResponder()
@@ -128,7 +128,6 @@ class DrawView: UIView, UIGestureRecognizerDelegate {
                 // If tapped point is within 20 points, let's return this line
                 if hypot(x - point.x, y - point.y) < 20.0 { return index }
             }
-            
         }
         
         // If nothing is close enough to the tapped point, then we did not select a line
@@ -146,10 +145,12 @@ class DrawView: UIView, UIGestureRecognizerDelegate {
     func moveLine(sender: UIPanGestureRecognizer) {
         print("Gesture recognized as pan")
         
+        self.menuController = UIMenuController.sharedMenuController()
+        
         // if a line is selected...
         if let validSelectedLineIndex = self.selectedLineIndex {
-            // when the pan recognizer changes its position...
-            if sender.state == UIGestureRecognizerState.Changed {
+            // when the pan recognizer changes its position & prevent line from beind dragged when contextual menu is present
+            if sender.state == UIGestureRecognizerState.Changed && !self.menuController.menuVisible {
                 // how far has the pan moved?
                 let translationOfPanGesture = sender.translationInView(self)
                 // add the translation to the current beginning and end points of the line
@@ -217,6 +218,9 @@ class DrawView: UIView, UIGestureRecognizerDelegate {
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
         // Let's put in a log statement to see the order of events
         print(__FUNCTION__)
+        if self.menuController.menuVisible {
+            self.selectedLineIndex = nil
+        }
         for touch in touches {
             let validTouchLocation = touch.locationInView(self)
             let newLine = Line(begin: validTouchLocation, end: validTouchLocation)
