@@ -8,7 +8,7 @@
 
 import UIKit
 
-class DrawView: UIView {
+class DrawView: UIView, UIGestureRecognizerDelegate {
     
     // MARK: - Stored Properties
     
@@ -22,6 +22,7 @@ class DrawView: UIView {
             }
         }
     }
+    var panGestureRecognizer: UIPanGestureRecognizer!
     
     // MARK: - IBInspectable properties
     
@@ -78,7 +79,7 @@ class DrawView: UIView {
         
         let menuController = UIMenuController.sharedMenuController()
         if self.selectedLineIndex != nil {
-            // Make DrawView the target menu item action messages
+            // Make DrawView the target menu item action messages sent by menuController
             self.becomeFirstResponder()
             
             let deleteMenuItem = UIMenuItem(title: "Delete", action: "deleteLine:")
@@ -142,6 +143,29 @@ class DrawView: UIView {
         }
     }
     
+    func moveLine(sender: UIPanGestureRecognizer) {
+        print("Gesture recognized as pan")
+        
+        // if a line is selected...
+        if let validSelectedLineIndex = self.selectedLineIndex {
+            // when the pan recognizer changes its position...
+            if sender.state == UIGestureRecognizerState.Changed {
+                // how far has the pan moved?
+                let translationOfPanGesture = sender.translationInView(self)
+                // add the translation to the current beginning and end points of the line
+                self.finishedLines[validSelectedLineIndex].begin.x += translationOfPanGesture.x
+                self.finishedLines[validSelectedLineIndex].begin.y += translationOfPanGesture.y
+                self.finishedLines[validSelectedLineIndex].end.x += translationOfPanGesture.x
+                self.finishedLines[validSelectedLineIndex].end.y += translationOfPanGesture.y
+                
+                sender.setTranslation(CGPoint.zero, inView: self)
+                
+                self.setNeedsDisplay()
+            }
+        }
+        else { return }
+    }
+    
     // MARK: - NSCoder Methods
     
     required init?(coder aDecoder: NSCoder) {
@@ -159,6 +183,11 @@ class DrawView: UIView {
         
         let longPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: "longPress:")
         self.addGestureRecognizer(longPressGestureRecognizer)
+        
+        self.panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "moveLine:")
+        self.panGestureRecognizer.delegate = self
+        self.panGestureRecognizer.cancelsTouchesInView = false
+        self.addGestureRecognizer(self.panGestureRecognizer)
     }
     
     // MARK: - UIView Methods
@@ -227,5 +256,11 @@ class DrawView: UIView {
         print(__FUNCTION__)
         self.currentLines.removeAll()
         self.setNeedsDisplay()
+    }
+    
+    // MARK: - UIGestureRecognizer Methods
+    
+    func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWithGestureRecognizer otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true
     }
 }
